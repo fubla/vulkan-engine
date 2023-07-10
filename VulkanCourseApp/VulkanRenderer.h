@@ -8,6 +8,7 @@
 #include <set>
 #include "Utilities.h"
 #include <algorithm>
+#include <array>
 
 class VulkanRenderer
 {
@@ -47,6 +48,11 @@ private:
 	VkSwapchainKHR swapchain;
 	std::vector<SwapchainImage> swapchainImages;
 
+	// - Pipeline
+	VkPipeline graphicsPipeline;
+	VkPipelineLayout pipelineLayout;
+	VkRenderPass renderPass;
+
 	// - Utility
 	VkFormat swapchainImageFormat;
 	VkExtent2D swapchainExtent;
@@ -57,6 +63,7 @@ private:
 	void createLogicalDevice();
 	void createSurface();
 	void createSwapChain();
+	void createRenderPass();
 	void createGraphicsPipeline();
 
 
