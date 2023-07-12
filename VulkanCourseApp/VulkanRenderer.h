@@ -16,11 +16,15 @@ public:
 	VulkanRenderer();
 
 	int init(GLFWwindow *newWindow);
+	void draw();
 	void cleanup();
+
 	~VulkanRenderer();
 
 private:
 	GLFWwindow * window;
+
+	int currentFrame = 0;
 
 	const std::vector<const char*> validationLayers =
 	{
@@ -62,6 +66,11 @@ private:
 	VkFormat swapchainImageFormat;
 	VkExtent2D swapchainExtent;
 
+	// - Synchronization
+	std::vector<VkSemaphore> imageAvailable;
+	std::vector<VkSemaphore> renderFinished;
+	std::vector<VkFence> drawFences;
+
 	// Vulkan functions
 	// - Create functions
 	void createInstance();
@@ -73,6 +82,8 @@ private:
 	void createFramebuffers();
 	void createCommandPool();
 	void createCommandBuffers();
+	void createSynchronization();
+
 
 	// - Record Functions
 	void recordCommands();
