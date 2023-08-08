@@ -7,6 +7,7 @@
 #include <vector>
 #include <set>
 #include "Utilities.h"
+#include "Mesh.h"
 #include <algorithm>
 #include <array>
 
@@ -25,6 +26,9 @@ private:
 	GLFWwindow * window;
 
 	int currentFrame = 0;
+
+	// Scene Objects
+	Mesh firstMesh;
 
 	const std::vector<const char*> validationLayers =
 	{
