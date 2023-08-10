@@ -15,24 +15,44 @@ int VulkanRenderer::init(GLFWwindow * newWindow)
 		createSurface();
 		getPhysicalDevice();
 		createLogicalDevice();
-
-		// Create a mesh
-		std::vector<Vertex> meshVertices = {
-			{{0.4, -0.4, 0.0}, {1.0, 0.0, 0.0}},
-			{{0.4, 0.4, 0.0}, {0.0, 1.0, 0.0}},
-			{{-0.4, 0.4, 0.0}, {0.0, 0.0, 1.0}},
-
-			{{-0.4, 0.4, 0.0}, {0.0, 0.0, 1.0}},
-			{{-0.4, -0.4, 0.0}, {1.0, 1.0, 0.0}},
-			{{0.4, -0.4, 0.0}, {1.0, 0.0, 0.0}}
-		};
-		firstMesh = Mesh(mainDevice.physicalDevice, mainDevice.logicalDevice, &meshVertices);
-		
 		createSwapChain();
 		createRenderPass();
 		createGraphicsPipeline();
 		createFramebuffers();
 		createCommandPool();
+
+		// Create a mesh
+		// Vertex Data
+		std::vector<Vertex> meshVertices = {
+			{{-0.1, -0.4, 0.0},	{1.0, 0.0, 0.0}},		// 0
+			{{-0.1, 0.4, 0.0},	{0.0, 1.0, 0.0}},		// 1
+			{{-0.9, 0.4, 0.0},	{0.0, 0.0, 1.0}},		// 2
+			{{-0.9, -0.4, 0.0}, {1.0, 1.0, 0.0}},		// 3
+		};
+
+		std::vector<Vertex> meshVertices2 = {
+			{{0.9, -0.3, 0.0},	{1.0, 0.0, 0.0}},		// 0
+			{{0.9, 0.1, 0.0},	{0.0, 1.0, 0.0}},		// 1
+			{{0.1, 0.3, 0.0},	{0.0, 0.0, 1.0}},		// 2
+			{{0.1, -0.3, 0.0}, {1.0, 1.0, 0.0}},		// 3
+		};
+
+		// Index Data
+		std::vector<uint32_t> meshIndices = {
+			0, 1, 2,
+			2, 3, 0
+		};	
+
+		Mesh firstMesh = Mesh(mainDevice.physicalDevice, mainDevice.logicalDevice, 
+			graphicsQueue, graphicsCommandPool, 
+			&meshVertices, &meshIndices);
+		Mesh secondMesh = Mesh(mainDevice.physicalDevice, mainDevice.logicalDevice, 
+			graphicsQueue, graphicsCommandPool, 
+			&meshVertices2, &meshIndices);
+
+		meshList.push_back(firstMesh);
+		meshList.push_back(secondMesh);
+
 		createCommandBuffers();
 		recordCommands();
 		createSynchronization();
@@ -106,7 +126,10 @@ void VulkanRenderer::cleanup()
 	// Wait until no actions being run on device before destroying
 	vkDeviceWaitIdle(mainDevice.logicalDevice);
 
-	firstMesh.destroyVertexBuffer();
+	for (auto& mesh : meshList)
+	{
+		mesh.destroyBuffers();
+	}
 	for (size_t i = 0; i < MAX_FRAME_DRAWS; i++)
 	{
 		vkDestroySemaphore(mainDevice.logicalDevice, renderFinished [i], nullptr);
@@ -714,7 +737,7 @@ void VulkanRenderer::recordCommands()
 	// Information about how to begin each command buffer
 	VkCommandBufferBeginInfo bufferBeginInfo = {};
 	bufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	// bufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;	// Buffer can be resubmitted when it has already been submitted and is awaiting execution
+	bufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;	// Buffer can be resubmitted when it has already been submitted and is awaiting execution
 
 	// Information about how to begin a render pass (only needed for graphical applications)
 	VkRenderPassBeginInfo renderPassBeginInfo = {};
@@ -731,33 +754,39 @@ void VulkanRenderer::recordCommands()
 
 	for (size_t i = 0; i < commandBuffers.size(); i++)
 	{
-		renderPassBeginInfo.framebuffer = swapchainFramebuffers [i];
+		renderPassBeginInfo.framebuffer = swapchainFramebuffers[i];
 
 		// Start recording commands to command buffer
-		VkResult result = vkBeginCommandBuffer(commandBuffers [i], &bufferBeginInfo);
+		VkResult result = vkBeginCommandBuffer(commandBuffers[i], &bufferBeginInfo);
 		if (result != VK_SUCCESS)
 		{
 			throw std::runtime_error("Failed to start recording a Command Buffer!");
 		}
 
-		// Begin Render Pass
-		vkCmdBeginRenderPass(commandBuffers [i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+			// Begin Render Pass
+			vkCmdBeginRenderPass(commandBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-		// Bind Pipeline to be used in render pass
-		vkCmdBindPipeline(commandBuffers [i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+				// Bind Pipeline to be used in render pass
+				vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
-		VkBuffer vertexBuffers[] = {firstMesh.getVertexBuffer()};					// Buffers to bind
-		VkDeviceSize offsets[] = {0};												// Offsets into buffers being bound
-		vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);	// Command to bind vertex buffer before drawing with them
+				for (auto &mesh: meshList)
+				{
+					VkBuffer vertexBuffers[] = {mesh.getVertexBuffer()};					// Buffers to bind
+					VkDeviceSize offsets[] = {0};												// Offsets into buffers being bound
+					vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);	// Command to bind vertex buffer before drawing with them
 
-		// Execute pipeline
-		vkCmdDraw(commandBuffers [i], static_cast<uint32_t>(firstMesh.getVertexCount()), 1, 0, 0);
+					// Bind mesh index buffer, with 0 offset and using the uint32 index type
+					vkCmdBindIndexBuffer(commandBuffers[i], mesh.getIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
-		// End Render Pass
-		vkCmdEndRenderPass(commandBuffers [i]);
+					// Execute pipeline
+					vkCmdDrawIndexed(commandBuffers[i], mesh.getIndexCount(), 1, 0, 0, 0);
+				}
+
+			// End Render Pass
+			vkCmdEndRenderPass(commandBuffers[i]);
 
 		// Stop recording to command buffer
-		result = vkEndCommandBuffer(commandBuffers [i]);
+		result = vkEndCommandBuffer(commandBuffers[i]);
 		if (result != VK_SUCCESS)
 		{
 			throw std::runtime_error("Failed to stop recording a Command Buffer!");
