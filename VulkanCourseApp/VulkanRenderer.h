@@ -14,6 +14,8 @@
 #include <algorithm>
 #include <array>
 
+#include "stb_image.h"
+
 class VulkanRenderer
 {
 public:
@@ -91,6 +93,11 @@ private:
 	/*VkDeviceSize minUniformBufferOffset;
 	size_t modelUniformAlignment;*/
 	//Model *modelTransferSpace;
+
+	// - Assets
+	std::vector<VkImage> textureImages;
+	// TODO optimal approach would be to have a single image memory and to have textures reference offsets to the memory
+	std::vector<VkDeviceMemory> texturesImageMemory;
 
 	// - Pipeline
 	VkPipeline graphicsPipeline;
@@ -175,5 +182,10 @@ private:
 		VkMemoryPropertyFlags propertyFlags, VkDeviceMemory *imageMemory);
 	VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 	VkShaderModule createShaderModule(const std::vector<char> &code);
+
+	int createTexture(std::string fileName);
+
+	// -- Loader Functions
+	stbi_uc *loadTextureFile(std::string fileName, int *width, int *height, VkDeviceSize *imageSize);
 };
 
