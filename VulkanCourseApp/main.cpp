@@ -31,7 +31,7 @@ void initWindow(std::string wName = "Test Window", const int width = 800, const 
 int main()
 {
 	// Create window
-	initWindow("Test Window", 800, 600);
+	initWindow("Test Window", 1366, 768);
 
 	// Create Vulkan renderer instance
 	if (vulkanRenderer.init(window) == EXIT_FAILURE)
@@ -40,6 +40,7 @@ int main()
 	}
 
 	float angle = 0.0f;
+	float zCoord = 0.0f;
 	float deltaTime = 0.0f;
 	float lastTime = 0.0f;
 
@@ -58,13 +59,15 @@ int main()
 			angle -= 360.0f;
 		}
 
+		zCoord = -2.5f + 3.0f*sin(angle / 10.0f);
+
 		glm::mat4 firstModel(1.0f);
 		glm::mat4 secondModel(1.0f);
 
-		firstModel = glm::translate(firstModel, glm::vec3(0.0f, 0.0f, -3.5f));
+		firstModel = glm::translate(firstModel, glm::vec3(0.0f, 0.0f, zCoord));
 		firstModel = glm::rotate(firstModel, glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f));
 
-		secondModel = glm::translate(secondModel, glm::vec3(0.0f, 0.0f, -3.0f));
+		secondModel = glm::translate(secondModel, glm::vec3(0.0f, 0.0f, -2.5f));
 		secondModel = glm::rotate(secondModel, glm::radians(-angle*10), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		vulkanRenderer.updateModel(0, firstModel);

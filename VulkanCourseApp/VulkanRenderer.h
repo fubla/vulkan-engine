@@ -63,6 +63,7 @@ private:
 	{
 		VkPhysicalDevice physicalDevice;
 		VkDevice logicalDevice;
+		VkPhysicalDeviceFeatures deviceFeatures;
 	} mainDevice;
 	VkQueue graphicsQueue;
 	VkQueue presentationQueue;
@@ -76,13 +77,15 @@ private:
 	VkDeviceMemory depthBufferImageMemory;
 	VkImageView depthBufferImageView;
 
+	VkSampler textureSampler;
+
 	// - Descriptors
 	VkDescriptorSetLayout descriptorSetLayout;
 	VkPushConstantRange pushConstantRange;
 
 	VkDescriptorPool descriptorPool;
 	std::vector<VkDescriptorSet> descriptorSets;
-
+	
 	std::vector<VkBuffer> vpUniformBuffers;
 	std::vector<VkDeviceMemory> vpUniformBufferMemory;
 	
@@ -98,6 +101,12 @@ private:
 	std::vector<VkImage> textureImages;
 	// TODO optimal approach would be to have a single image memory and to have textures reference offsets to the memory
 	std::vector<VkDeviceMemory> texturesImageMemory;
+	std::vector<VkImageView> textureImageViews;
+
+	VkDescriptorSetLayout samplerSetLayout;
+
+	VkDescriptorPool samplerDescriptorPool;
+	std::vector<VkDescriptorSet> samplerDescriptorSets;
 
 	// - Pipeline
 	VkPipeline graphicsPipeline;
@@ -133,6 +142,7 @@ private:
 	void createCommandPool();
 	void createCommandBuffers();
 	void createSynchronization();
+	void createTextureSampler();
 
 	void createUniformBuffers();
 	void createDescriptorPool();
@@ -183,7 +193,9 @@ private:
 	VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 	VkShaderModule createShaderModule(const std::vector<char> &code);
 
+	int createTextureImage(std::string fileName);
 	int createTexture(std::string fileName);
+	int createTextureDescriptor(VkImageView textureImageView);
 
 	// -- Loader Functions
 	stbi_uc *loadTextureFile(std::string fileName, int *width, int *height, VkDeviceSize *imageSize);
