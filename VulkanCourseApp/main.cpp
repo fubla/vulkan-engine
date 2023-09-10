@@ -44,6 +44,8 @@ int main()
 	float deltaTime = 0.0f;
 	float lastTime = 0.0f;
 
+	int skull = vulkanRenderer.createMeshModel("Models/12140_Skull_v3_L2.obj");
+
 	// Loop until closed
 	while(!glfwWindowShouldClose(window))
 	{
@@ -54,24 +56,16 @@ int main()
 		lastTime = now;
 
 		angle += 10.0f * deltaTime;
+
 		if(angle > 360.0f)
 		{
 			angle -= 360.0f;
 		}
 
-		zCoord = -2.5f + 3.0f*sin(angle / 10.0f);
-
-		glm::mat4 firstModel(1.0f);
-		glm::mat4 secondModel(1.0f);
-
-		firstModel = glm::translate(firstModel, glm::vec3(0.0f, 0.0f, zCoord));
-		firstModel = glm::rotate(firstModel, glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f));
-
-		secondModel = glm::translate(secondModel, glm::vec3(0.0f, 0.0f, -2.5f));
-		secondModel = glm::rotate(secondModel, glm::radians(-angle*10), glm::vec3(0.0f, 0.0f, 1.0f));
-
-		vulkanRenderer.updateModel(0, firstModel);
-		vulkanRenderer.updateModel(1, secondModel);
+		glm::mat4 testMat = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -10.0f, 0.0f));
+		testMat = glm::rotate(testMat, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		testMat = glm::rotate(testMat, glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f));
+		vulkanRenderer.updateModel(skull, testMat);
 
 		vulkanRenderer.draw();
 	} 
