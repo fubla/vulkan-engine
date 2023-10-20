@@ -9,6 +9,7 @@ Currently supported features:
 - Model loading
 - Diffuse texture maps
 - Subpasses
+- Animation
 
 Planned features (in order of priority):
 - Main ight source types (directional, point and point lights)
