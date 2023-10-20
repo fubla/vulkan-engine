@@ -2,7 +2,7 @@
 Real-time rendering engine with Vulkan (WIP)
 
 ## Description
-WIP real-time rendering engine using the Vulkan API.
+WIP real-time rendering engine using the Vulkan API and C++.
 ### Features
 Currently supported features:
 - Ambient lighting
@@ -17,6 +17,13 @@ Planned features (in order of priority):
 - User input
 - Skyboxes
 - Shadow mapping (unidirectional and omnidirectional)
+- Anti-aliasing
+- Deferred shading
 - Area lights
-- Physically based materials
+- Gamma correction
+- Tone mapping
+- HDR
+- Bloom
+- Tesselation
+- Physically based shading
 - Ray tracing
