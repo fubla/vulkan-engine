@@ -8,6 +8,7 @@ Currently supported features:
 - Model loading
 - Diffuse texture maps
 - Subpasses
+
 Planned features (in order of priority):
 - Texture map types (specular, normal, etc.)
 - Phong shading model
